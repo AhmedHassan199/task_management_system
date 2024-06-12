@@ -37,7 +37,6 @@ class TaskController extends Controller
         $tasks = $query->with('dependencies', 'assignees')->get();
         // list tasks without( dependencies , assignees)
         // $tasks = $query->get();
-        // dd($tasks);
         return response()->json($query->get());
     }
 
@@ -97,25 +96,49 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
-    public function destroy(Task $task)
+    /**
+     * delete task by authorized user
+     */
+    public function destroy(Request $request)
     {
-        $this->authorize('delete', $task);
-        if (!$task) {
-            return response()->json(["error" => "Task not found"], 404);
-        }
+        $this->authorize('delete', Task::class);
+
+        $rules = [
+            'task_id' => 'required|exists:tasks,id',
+        ];
+
+        $messages = [
+            'task_id.exists' => 'The specified task does not exist.',
+        ];
+
+        $this->validate($request, $rules, $messages);
+
+        $task = Task::findOrFail($request->task_id);
+
         $task->delete();
-        return response()->json(["message" => "Successfully deleted task", 'status' => 204]);
+        return response()->json(["message" => "The task has deleted successfully", 'status' => 204]);
     }
 
-
-    public function getTasksByUser(User $user)
+    public function addDependencies(Request $request, $taskId)
     {
-        $this->authorize('view', $user);
+        $request->validate([
+            'assigned_tasks' => 'required|array',
+            'assigned_tasks.*' => 'exists:tasks,id',
+        ]);
 
-        $tasks = $user->tasks()->with('dependencies', 'assignees')->get();
+        $assignedTaskIds = $request->input('assigned_tasks');
 
-        return response()->json($tasks);
+        $dependenceTask = Task::findOrFail($taskId);
+
+        $assignedTasks = Task::whereIn('id', $assignedTaskIds)->get();
+
+        foreach ($assignedTasks as $assignedTask) {
+            $assignedTask->update(['parent_id' => $dependenceTask->id]);
+        }
+
+        return response()->json(['message' => 'Tasks successfully assigned dependencies']);
     }
+
     public function assignTaskToUsers(Request $request, Task $task)
     {
         $this->authorize('assignUser', Task::class);
