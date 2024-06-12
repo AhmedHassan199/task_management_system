@@ -20,7 +20,7 @@ class TaskPolicy
 
     public function viewAny(User $user)
     {
-        return $user->role === 'manager';
+        return true;
     }
 
     public function view(User $user, Task $task)
@@ -39,6 +39,14 @@ class TaskPolicy
     }
 
     public function delete(User $user, Task $task)
+    {
+        return $user->role === 'manager';
+    }
+    public function updateStatus(User $user, Task $task)
+    {
+        return $user->role === 'manager' || $task->assignees->contains($user);
+    }
+    public function assignUser(User $user, Task $task)
     {
         return $user->role === 'manager';
     }

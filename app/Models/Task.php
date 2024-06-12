@@ -19,7 +19,7 @@ class Task extends Model
 
     public function assignees()
     {
-        return $this->belongsToMany(User::class)->withTimestamps();
+        return $this->belongsToMany(User::class, 'task_user');
     }
 
     public function dependencies()
@@ -30,5 +30,9 @@ class Task extends Model
     public function parent()
     {
         return $this->belongsTo(Task::class, 'parent_id');
+    }
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
     }
 }
