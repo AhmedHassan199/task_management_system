@@ -7,6 +7,8 @@ use Throwable;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Auth\Access\AuthorizationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Http\Request;
 
 class Handler extends ExceptionHandler
 {
@@ -35,10 +37,13 @@ class Handler extends ExceptionHandler
      *
      * @return void
      */
-    public function register()
+    // not found
+    public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (NotFoundHttpException $e, Request $request) {
+            return response()->json([
+                'error' => 'item not found.'
+            ], 404);
         });
     }
     // handel unauthenticated message response
