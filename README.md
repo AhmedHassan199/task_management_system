@@ -73,7 +73,7 @@ Before you begin, make sure you have the following installed:
 
 ### User and Task Relationship
 
-![User, Task and Dependencies Relationship](Documets/task_managemant_api_ERD.png)
+![User, Task and Dependencies Relationship](Documets/task_mangaement_system.png)
 
 # Entity-Relationship Diagram (ERD) Description
 
@@ -123,9 +123,7 @@ Before you begin, make sure you have the following installed:
 - Many-to-One with User: `user` (User associated with the assignment)
 - Many-to-One with Task: `task` (Task associated with the assignment)
 
-### Laravel API Database Compelete Digram
 
-![Task Dependencies Relationship](Documets/task_managemant_api_full_ERD.png)
 
 ## Default Laravel Tables
 - `users` (Default Laravel users table)
