@@ -50,4 +50,8 @@ class TaskPolicy
     {
         return $user->role === 'manager';
     }
+    public function addDependencies(User $user, Task $task)
+    {
+        return $user->role === 'manager';
+    }
 }
