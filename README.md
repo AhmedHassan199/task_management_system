@@ -1,6 +1,6 @@
 # Task Management API
 
-This Laravel RESTful API, named "task_management_api," allows you to manage tasks, user authentication, and related operations.
+This Laravel RESTful API, named "task_management_system," allows you to manage tasks, user authentication, and related operations.
 
 ## Features
 
@@ -24,9 +24,10 @@ This Laravel RESTful API, named "task_management_api," allows you to manage task
 ## Prerequisites
 
 Before you begin, make sure you have the following installed:
-
-- [Laravel](https://laravel.com/) (with Composer)
-- [Postman](https://www.postman.com/) for testing API requests
+- PHP >= 8.2
+- Composer
+- Laravel >= 9
+- Postman (for API testing)
 
 ## Setup Instructions
 
@@ -87,11 +88,6 @@ Before you begin, make sure you have the following installed:
 - `created_at`
 - `updated_at`
 
-**Relationships:**
-- One-to-Many with Task: `createdTasks` (Tasks created by the user)
-- One-to-Many with Task: `updatedTasks` (Tasks updated by the user)
-- Many-to-Many with Task: `assignedTasks` (Tasks assigned to the user)
-
 ## Tasks
 **Attributes:**
 - `id` (Primary Key)
@@ -99,31 +95,26 @@ Before you begin, make sure you have the following installed:
 - `description`
 - `status` (Enum: 'pending', 'completed', 'canceled')
 - `due_date`
-- `parent_id` (Foreign Key)
-- `created_by` (Foreign Key)
-- `updated_by` (Foreign Key)
+- `parent_id` (Foreign Key) 
 - `created_at`
 - `updated_at`
 
-**Relationships:**
-- Many-to-One with User: `createdByUser` (User who created the task)
-- Many-to-One with User: `updatedByUser` (User who last updated the task)
-- One-to-Many with Task: `dependencies` (Dependent tasks associated with the task)
-- Many-to-Many with User: `assignedUsers` (Users assigned to the task)
-- Many-to-Many with Task (Self-Referential): `dependencies` (Tasks that are dependencies of the current task)
-
-## Assignments
+## task_user
 **Attributes:**
 - `user_id` (Foreign Key, Composite Primary Key)
 - `task_id` (Foreign Key, Composite Primary Key)
 - `created_at`
 - `updated_at`
 
-**Relationships:**
-- Many-to-One with User: `user` (User associated with the assignment)
-- Many-to-One with Task: `task` (Task associated with the assignment)
+## Summary of Relationships
 
+**Users and Tasks:**
+- Many-to-Many: Users can be assigned to multiple tasks, and tasks can have multiple users.
+- This is facilitated through the task_user pivot table.
 
+**Tasks**
+ - Self-referencing One-to-Many: Tasks can have child tasks (subtasks), where one task can be a parent to many other tasks.
+ - This is achieved through the parent_id column in the tasks table.
 
 ## Default Laravel Tables
 - `users` (Default Laravel users table)
@@ -136,6 +127,7 @@ Before you begin, make sure you have the following installed:
 ## Import Postman Collection
 
 Download the [Postman Collection](<Documets/Version 1.0.postman_collection.json>) file.
+click here for postman doc the [Postman Publich](<Documets/Version 1.0.postman_collection.json>) file.
 
 1. Open Postman.
 
@@ -143,26 +135,9 @@ Download the [Postman Collection](<Documets/Version 1.0.postman_collection.json>
 
 3. Upload the downloaded Postman Collection file.
 
-## Run API Requests
-
+## API Requests
 Follow the steps below to test API requests using the Postman collection:
+Download the [API DOC](<Documets/Task Management API Documentation.pdf>) file.
 
-1. **Login:**
-   - Use the "Login" request in the Postman collection.
-   - Set the email and password in the request body.
-   - Obtain the `token_from_login_response` from the response.
 
-2. **Retrieve All User's Tasks:**
-   - Use the "Retrieve All User's Tasks" request.
-   - Set the Authorization header with the obtained token.
-
-3. **Retrieve All Tasks:**
-   - Use the "Retrieve All Tasks" request.
-   - Set the Authorization header with the obtained token.
-
-...
-
-12. **Logout:**
-    - Use the "Logout" request.
-    - Set the Authorization header with the obtained token.
 
