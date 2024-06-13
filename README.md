@@ -34,7 +34,7 @@ Before you begin, make sure you have the following installed:
 1. **Clone the Repository:**
 
     ```bash
-    https://github.com/AhmedHassan199/task_management_system.git
+    git clone https://github.com/AhmedHassan199/task_management_system.git
     cd task_management_system
     ```
 
@@ -67,9 +67,6 @@ Before you begin, make sure you have the following installed:
     ```bash
     php artisan serve
     ```
-
-   The API will be accessible at `http://127.0.0.1`.
-
 ## Entity Relationship Diagram (ERD)
 
 ### User and Task Relationship
@@ -126,8 +123,8 @@ Before you begin, make sure you have the following installed:
 
 ## Import Postman Collection
 
-Download the [Postman Collection](<Documets/Version 1.0.postman_collection.json>) file.
-click here for postman doc the [Postman Publich](<Documets/Version 1.0.postman_collection.json>) file.
+- Download the [Postman Collection](<Documets/Version 1.0.postman_collection.json>) file.
+- click here for postman doc the [Postman Publich](https://documenter.getpostman.com/view/33037615/2sA3XPENr3).
 
 1. Open Postman.
 
