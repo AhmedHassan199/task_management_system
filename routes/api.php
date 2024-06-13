@@ -30,7 +30,7 @@ Route::middleware('auth:sanctum')->prefix('tasks')->group(function () {
     Route::put('/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('/', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::put('/{task}/status', [TaskController::class, 'updateStatus']);
-    Route::put('{task}/assign-users', [TaskController::class, 'assignTaskToUsers']);
+    Route::post('{task}/assign-users', [TaskController::class, 'assignTaskToUsers']);
     Route::post('/{taskId}/dependencies', [TaskController::class, 'addDependencies'])
         ->name('task.addDependencies');
 });

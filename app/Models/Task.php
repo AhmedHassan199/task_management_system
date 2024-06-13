@@ -35,4 +35,13 @@ class Task extends Model
     {
         return $this->belongsToMany(User::class);
     }
+    public function allDependenciesCompleted()
+    {
+        foreach ($this->dependencies as $dependency) {
+            if ($dependency->status !== 'completed') {
+                return false;
+            }
+        }
+        return true;
+    }
 }

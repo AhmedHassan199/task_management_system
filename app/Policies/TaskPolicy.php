@@ -46,11 +46,12 @@ class TaskPolicy
     {
         return $user->role === 'manager' || $task->assignees->contains($user);
     }
-    public function assignUser(User $user, Task $task)
+    public function addDependencies(User $user, Task $task)
     {
         return $user->role === 'manager';
     }
-    public function addDependencies(User $user, Task $task)
+
+    public function assignUser(User $user, Task $task)
     {
         return $user->role === 'manager';
     }

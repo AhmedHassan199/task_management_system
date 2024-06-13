@@ -7,6 +7,7 @@ use App\Helpers\ApiResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AddDependenciesRequest;
 use App\Http\Requests\AssignTaskToUsersRequest;
+use App\Http\Requests\DestroyTaskRequest;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\UpdateTaskStatusRequest;
@@ -45,7 +46,6 @@ class TaskController extends Controller
         $tasks = $query->with('dependencies', 'assignees')->get();
         // list tasks without( dependencies , assignees)
         // $tasks = $query->get();
-        // return response()->json($query->get());
         return ApiResponseHelper::success(TaskResource::collection($tasks));
     }
 
@@ -80,7 +80,16 @@ class TaskController extends Controller
         try {
             $task = Task::findOrFail($id);
             $this->authorize('update', $task);
+
             $validated = $request->validated();
+
+            // Check if task status is being updated to 'completed'
+            if (isset($validated['status']) && $validated['status'] === 'completed') {
+                if (!$task->allDependenciesCompleted()) {
+                    return ApiResponseHelper::error('All dependencies must be completed before this task can be completed.', 400);
+                }
+            }
+
             $task->update($validated);
 
             if ($request->has('assignees')) {
@@ -92,10 +101,9 @@ class TaskController extends Controller
             return ApiResponseHelper::success(new TaskResource($task), 'Successfully updated task', 200);
         } catch (ModelNotFoundException $e) {
             return ApiResponseHelper::error('Task not found', 404);
-        } catch (\Exception $e) {
-            return ApiResponseHelper::error('Task update failed', 500, ['error' => $e->getMessage()]);
         }
     }
+
     public function updateStatus(UpdateTaskStatusRequest $request, $id)
     {
         try {
@@ -105,28 +113,27 @@ class TaskController extends Controller
             // Retrieve the validated input data
             $validated = $request->validated();
 
+            // Check if task status is being updated to 'completed'
+            if ($validated['status'] === 'completed') {
+                if (!$task->allDependenciesCompleted()) {
+                    return ApiResponseHelper::error('All dependencies must be completed before this task can be completed.', 400);
+                }
+            }
+
             $task->status = $validated['status'];
             $task->save();
 
             return ApiResponseHelper::success(new TaskResource($task), 'Successfully updated task status', 200);
         } catch (ModelNotFoundException $e) {
             return ApiResponseHelper::error('Task not found', 404);
-        } catch (\Exception $e) {
-            return ApiResponseHelper::error('Task status update failed', 500, ['error' => $e->getMessage()]);
         }
     }
     /**
      * delete task by authorized user
      */
-    public function destroy(Request $request)
+    public function destroy(DestroyTaskRequest $request)
     {
         $this->authorize('delete', Task::class);
-
-        $request->validate([
-            'task_id' => 'required|exists:tasks,id',
-        ], [
-            'task_id.exists' => 'The specified task does not exist.',
-        ]);
 
         try {
             $task = Task::findOrFail($request->task_id);
@@ -135,47 +142,50 @@ class TaskController extends Controller
             return ApiResponseHelper::success(null, 'The task has been deleted successfully', 200);
         } catch (ModelNotFoundException $e) {
             return ApiResponseHelper::error('Task not found', 404);
-        } catch (\Exception $e) {
-            return ApiResponseHelper::error('Failed to delete task', 500, ['error' => $e->getMessage()]);
         }
     }
+
     public function addDependencies(AddDependenciesRequest $request, $taskId)
     {
-        $this->authorize('addDependencies', Task::class);
 
         try {
-            $dependenceTask = Task::findOrFail($taskId);
+            $mainTask = Task::findOrFail($taskId);
+            $this->authorize('addDependencies', $mainTask);
 
             $assignedTaskIds = $request->input('assigned_tasks');
             $assignedTasks = Task::whereIn('id', $assignedTaskIds)->get();
 
             foreach ($assignedTasks as $assignedTask) {
-                $assignedTask->update(['parent_id' => $dependenceTask->id]);
+                $assignedTask->update(['parent_id' => $mainTask->id]);
             }
 
-            return ApiResponseHelper::success(null, 'Tasks successfully assigned dependencies');
+            $mainTask->load('dependencies');
+
+            return ApiResponseHelper::success(new TaskResource($mainTask), 'Tasks successfully assigned dependencies');
         } catch (ModelNotFoundException $e) {
-            return ApiResponseHelper::error('Dependent or assigned task not found', 404);
-        } catch (\Exception $e) {
-            return ApiResponseHelper::error('Failed to assign dependencies', 500, ['error' => $e->getMessage()]);
+            return ApiResponseHelper::error('Main task or assigned task not found', 404);
         }
     }
-
     public function assignTaskToUsers(AssignTaskToUsersRequest $request, $taskId)
     {
         try {
-            $this->authorize('assignUser', Task::class);
-
             $task = Task::findOrFail($taskId);
-
+            $this->authorize('assignUser', $task);
             $validated = $request->validated();
-            $task->users()->sync($validated['users']);
+            $newUserIds = $validated['users'];
+
+            $currentUserIds = $task->users()->pluck('users.id')->toArray();
+
+            $userIdsToAssign = array_diff($newUserIds, $currentUserIds);
+
+            if (empty($userIdsToAssign)) {
+                return ApiResponseHelper::error('All specified users are already assigned to this task', 400);
+            }
+            $task->users()->attach($userIdsToAssign);
 
             return ApiResponseHelper::success(null, 'Task assigned to users successfully');
         } catch (ModelNotFoundException $e) {
             return ApiResponseHelper::error('Task not found', 404);
-        } catch (\Exception $e) {
-            return ApiResponseHelper::error('Failed to assign users to task', 500, ['error' => $e->getMessage()]);
         }
     }
 }
