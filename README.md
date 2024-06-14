@@ -72,6 +72,7 @@ Before you begin, make sure you have the following installed:
 ### User and Task Relationship
 
 ![User, Task and Dependencies Relationship](Documets/task_mangaement_system.png)
+![User, Task and Dependencies Relationship](Documets/erd.PNG)
 
 # Entity-Relationship Diagram (ERD) Description
 
